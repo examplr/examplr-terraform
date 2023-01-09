@@ -1,0 +1,1 @@
+Copied from "doingcloudright/ecr-lifecycle-policy-rule/aws" which was outdated and incompatible.
