@@ -1,149 +1,108 @@
 
-#Overview
+# Purpose
 
-## AWS Accounts
- - exampr - master biller account
- - examplr-network - hosts the root DNS zone, examplr.com and creates child hosted zones (ex dev.examplr.com) for each app environment
- - examplr-dev - hosts ECR repos that will be shared by all app environments, and any app environments you want to deploy
- - examplr-prod - demo prod account designed to hold
+This repo is designed to serve as a best practice example and starting point for quickly bootstrapping new
+AWS environments via terraform and getting them to the point of usefulness for launching new web services.
+
+In its current form the terraform will provision everything you need to deploy multiple ECR containers
+via ECS Fargate behind an ALB all with SSL certs all in a VPC with approperiate public/private zones and security groups.
+
+This "starter kit" involves the following pieces:
+ - an AWS account with multiple subaccounts
+ - a purchased domain name (in this case examplr.co)
+ - a GitHub account and these repos:
+   - this repo: https://github.com/examplr/examplr-terraform
+   - a simple "Hello World" app: https://github.com/examplr/examplr-app-helloworld
+ - a Terraform Cloud account
+
+## TODO:
+ - several identified in this document below
+ - hook up a github action in "examplr-app-helloworld" to auto build/push/deploy new container images
  
-## Terraform Directories
- 1."network" run this first to create the required DNS master zone and child zones for each child app environment in the child environment account
- 1. "dev" - run next to create shared ecr repos in examplr-dev aws account
- 1. "app" - create a terraform workspace for each app environment you would like to deploy.
 
-## Github
- 1. https://github.com/examplr/examplr-terraform - this terraform project
- 1. https://github.com/examplr/examplr-app-helloworld - a simple springboot app accessable as "helloworld.dev.examplr.co"
-
-
-# Getting Started
-
- 1. Install terraform CLI
- 1. Checkout this repo
-
-```
-cd network
-terraform init
-terraform apply
-
-cd ../dev
-terraform init 
-terraform apply
-
-cd ../app
-
-export export TF_VAR_app_aws_region=us-east-1
-export export TF_VAR_app_aws_access_key={REPLACE_WITH tfuser@examplr-dev creds}
-export export TF_VAR_app_aws_secret_key={REPLACE_WITH tfuser@examplr-dev creds}
-
-terraform workspace new dev
-terraform workspace select dev
-terraform init
-terraform plan -var-file environments/dev/dev.tfvars
-terraform apply -var-file environments/dev/dev.tfvars
+## Resource Overview
+ 
+### AWS Accounts
+- exampr          - master biller account
+- examplr-network - hosts the root DNS zone, examplr.com and creates child hosted zones (ex dev.examplr.com) for each app environment
+- examplr-devops  - host ECR repos that will be shared by all environments
+- examplr-dev     - demo dev account
+- examplr-prod    - demo prod account
 
 
-xport export TF_VAR_app_aws_region=us-east-1
-export export TF_VAR_app_aws_access_key={REPLACE_WITH tfuser@examplr-prod creds}
-export export TF_VAR_app_aws_secret_key={REPLACE_WITH tfuser@examplr-prod creds}
+### Github
 
-terraform workspace new prod
-terraform workspace select prod
-terraform init
-terraform plan -var-file environments/prod/prod.tfvars
-terraform apply -var-file environments/prod/prod.tfvars
+#### This GitHub Terraform Repo
 
-```
+https://github.com/examplr/examplr-terraform 
 
-##Terraform Cloud
-wellsb1 / wells+examplr@rocketpartners.io
+Project Directories
+1. "global-network" Creates the required child zones and NS records for each child environment in the child environment Route43 subdomain zone.
+   For example "dev.examplr.co" gets created in the examplr-dev account and an NS record is put in examplr.co in the examplr-network 
+   account to point to dev.examplr.co subdomain.
+1. "global-devops" - Creates shared ECR repos.
+1. "environment-*" - creates the remainder of the app environment, in this case ALBs connecting to ECS Fargate containers.
 
+Each of the above directories is related to a Terraform Cloud workspace of the same name.
 
+##### Important Branches
 
+ - deploy/global-network
+ - deploy/global-devops
+ - deploy/environment-development
+ - deploy/environment-production
+  
 
-# Research
+   These branches have been automated in Terraform Cloud to run a plan on a PR and run an apply after a successful
+   merge and plan to these branches.  Running a plan/apply on one workspace does not impact the other workspaces.
 
-https://www.terraform-best-practices.com/naming
+#### Hello World Repo: 
 
-## Very Helpful
- - https://dev.to/thnery/create-an-aws-ecs-cluster-using-terraform-g80
-   - https://github.com/thnery/terraform-aws-template
- - https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/complete-vpc
+https://github.com/examplr/examplr-app-helloworld
 
-https://section411.com/2019/07/hello-world/
-https://itnext.io/creating-an-ecs-fargate-service-for-container-applications-using-terraform-and-terragrunt-2af5db3b35c0
-https://www.architect.io/blog/2021-03-30/create-and-manage-an-aws-ecs-cluster-with-terraform/
-
-## Additional
- - https://www.wbotelhos.com/aws-ecs-with-terraform
- - https://hands-on.cloud/managing-amazon-ecs-using-terraform/
- - https://aws.plainenglish.io/creating-an-ecs-cluster-with-terraform-edf6fd3b822
- - https://www.architect.io/blog/2021-03-30/create-and-manage-an-aws-ecs-cluster-with-terraform/
- - https://alexhladun.medium.com/create-a-vpc-endpoint-for-ecr-with-terraform-and-save-nat-gateway-1bc254c1f42
-
- - https://engineering.finleap.com/posts/2020-02-20-ecs-fargate-terraform/
+A simple springboot app accessible as "dev.examplr.co/helloworld1" or "api.examplr.co/helloworld1". See terraform.tfvars in environment-* for specifics on the url routing rules.
 
 
-## ECR Tagging
- - https://blog.scottlowe.org/2017/11/08/how-tag-docker-images-git-commit-information/
- - https://axellarsson.com/blog/tag-docker-image-with-git-commit-hash/
+### Terraform Cloud
+
+   User: wells+examplr@rocketpartners.io
+
+   Each root folder in this project (other than /modules) has been setup as its own workspace in TF Cloud and connected to GitHub.
+   The workspaces are setup to run plan on a pr to "release/${dir_name}" and then automatically deploy after a successful plan on a commit.
 
 
-## CERT Validation w/ Multiple Zones
-https://manicminer.io/posts/terraform-aws-acm-certificates-for-multiple-domains/
-https://github.com/manicminer/terraform-aws-acm-certificate
-https://stackoverflow.com/questions/63235321/aws-acm-certificate-seems-to-have-changed-its-state-output-possibly-due-to-a-pro
-https://stackoverflow.com/questions/62579564/how-to-create-a-map-in-terraform
+## Instructions To Replicate
+1. Register a new AWS account and provision the 4 specific sub accounts.
+1. Create an IAM CLI "tfuser" in each subaccount, record the API key creds.  
+    - TODO: tfusers currently provisioned as admin.  What is the right role
+    - TODO: should there be a single tfuser or a tfuser in each account
+    - TODO: can a master "accounts" terraform provision all of the accounts and tfusers?
+1. Setup a Route 53 hosted zone in "${name}-network" account and set Route 53 up with your registrar as the DNS for that domain.  An easy way to do this is to 
+   procure the domain name in the ${name}-network account.  If you do that, AWS will setup Route 53 for you automatically.
+1. Copy this repo to your desired location.  Don't copy the release branches, you will create those in your own repo after modifying variable values
+1. Modify all terraform.tfvars files to suite your needs.  Pay specific attention to the account ids in environment-*/tfvariables that must reference the AWS Account ID for your provisioned ${name}-network account.
+1. Commit to main.
+1. Create all of your release branches as above.
+1. Create a Terraform Cloud account
+1. Create TF Cloud workspace for each folder in this project other than "modules".
+   - Configure each workspace to have a "working directory" that matches each folder name (we only run that folder's tf code in that workspace)
+   - Configure each workspace to pull from the above specified release branch matching your workspace name
+   - Configure each workspace to auto deploy
+   - Configure each worksapces variables w/ the tfuser AWS creds for that account
+   - Run a plan/deploy for each worksapce.  The first time, order is important.
+     1. Fist - "global-network"
+     2. Second - "global-devos"
+     3. Then - "environment-*" in any order 
+1. Build and publish the "Hello World" container to ECR.
+1. Wait for our service to deploy your new container. Check the deployments, tasks, and alb target group members.
+1. Point your browser to your configured endpoints and enjoy.
 
 
+## Cheat Sheet
 
-## Resource Tagging
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/resource-tagging
-https://docs.aws.amazon.com/whitepapers/latest/tagging-best-practices/tagging-best-practices.html
-https://engineering.deptagency.com/best-practices-for-terraform-aws-tags
+### Docker Image Publishing
 
-### Multi vs Monorepo
-- https://www.google.com/search?q=terraform+monorepo&rlz=1C5CHFA_enUS907US907&oq=terraform+monore&aqs=chrome.0.0i512j69i57j0i512l2j0i22i30l2.2148j0j4&sourceid=chrome&ie=UTF-8#fpstate=ive&vld=cid:f3ddbe77,vid:4Rlwh4YVLRY
-- https://www.hashicorp.com/blog/terraform-mono-repo-vs-multi-repo-the-great-debate
-
-
-## Other Reading
-https://medium.com/react-courses/quick-ci-cd-from-github-to-prod-with-aws-ecr-ecs-creating-a-serverless-docker-container-698d360ee21e
- - manaul config of ecr/ecs and task definitions
-
-https://particule.io/en/blog/cicd-ecr-ecs/
- - github/terraform/cicd example using tags
-
-https://stevelasker.blog/2018/03/01/docker-tagging-best-practices-for-tagging-and-versioning-docker-images/ 
- - container tagging best practices
-
-https://medium.com/jp-tech/docker-image-tagging-strategy-for-deploying-to-production-d2b90c115691
-
-https://container-registry.com/posts/container-image-versioning/
-
-https://www.reddit.com/r/Terraform/comments/xoumxf/deploying_ecs_tasks_what_is_the_right_way/
-
-## ALB Cloudwatch Alarms
-https://github.com/lorenzoaiello/terraform-aws-alb-alarms
-
-
-## Terragrunt
-https://medium.com/@man-wai/why-use-terragrunt-in-2022-5e97c61cc539
-
-## Multi Account Setup
-https://thenewstack.io/terraform-on-aws-multi-account-setup-and-other-advanced-tips/
-https://jhooq.com/terraform-aws-multi-account/
-
-
-## Docker Image Publishing
-
-```
-
-```
-need to run in terraform-sandbox, not terraform-sandbox-devops
-
-Force a cluster update after publishing a new container
+... and force a service update after publishing so the new image gets deployed
 ```
 gradle build
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 937423686755.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest
@@ -152,4 +111,70 @@ docker push 937423686755.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest
 aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force-new-deployment
 
 ```
-docker run -p 8080:8080 937423686755.dkr.ecr.us-east-1.amazonaws.com/helloworld
+
+ 
+
+## Research Links
+
+### Multi AWS Account Setup
+- https://thenewstack.io/terraform-on-aws-multi-account-setup-and-other-advanced-tips/
+- https://jhooq.com/terraform-aws-multi-account/
+
+### Terraforming Fargate - Very Helpful
+ - https://dev.to/thnery/create-an-aws-ecs-cluster-using-terraform-g80
+   - https://github.com/thnery/terraform-aws-template
+ - https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/complete-vpc
+ - https://section411.com/2019/07/hello-world/
+ - https://itnext.io/creating-an-ecs-fargate-service-for-container-applications-using-terraform-and-terragrunt-2af5db3b35c0
+ - https://www.architect.io/blog/2021-03-30/create-and-manage-an-aws-ecs-cluster-with-terraform/
+
+### Terraforming Fargate - Also Helpful
+ - https://www.wbotelhos.com/aws-ecs-with-terraform
+ - https://hands-on.cloud/managing-amazon-ecs-using-terraform/
+ - https://aws.plainenglish.io/creating-an-ecs-cluster-with-terraform-edf6fd3b822
+ - https://www.architect.io/blog/2021-03-30/create-and-manage-an-aws-ecs-cluster-with-terraform/
+ - https://alexhladun.medium.com/create-a-vpc-endpoint-for-ecr-with-terraform-and-save-nat-gateway-1bc254c1f42
+ - https://engineering.finleap.com/posts/2020-02-20-ecs-fargate-terraform/
+
+### ECR Image Tagging
+ - https://blog.scottlowe.org/2017/11/08/how-tag-docker-images-git-commit-information/
+ - https://axellarsson.com/blog/tag-docker-image-with-git-commit-hash/
+
+### CERT Validation w/ Multiple Zones
+ - https://manicminer.io/posts/terraform-aws-acm-certificates-for-multiple-domains/
+ - https://github.com/manicminer/terraform-aws-acm-certificate
+ - https://stackoverflow.com/questions/63235321/aws-acm-certificate-seems-to-have-changed-its-state-output-possibly-due-to-a-pro
+ - https://stackoverflow.com/questions/62579564/how-to-create-a-map-in-terraform
+
+
+### Terraform Resource Tagging
+ - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/resource-tagging
+ - https://docs.aws.amazon.com/whitepapers/latest/tagging-best-practices/tagging-best-practices.html
+ - https://engineering.deptagency.com/best-practices-for-terraform-aws-tags
+
+### Terraform Multi vs Monorepo
+ - https://www.google.com/search?q=terraform+monorepo&rlz=1C5CHFA_enUS907US907&oq=terraform+monore&aqs=chrome.0.0i512j69i57j0i512l2j0i22i30l2.2148j0j4&sourceid=chrome&ie=UTF-8#fpstate=ive&vld=cid:f3ddbe77,vid:4Rlwh4YVLRY
+ - https://www.hashicorp.com/blog/terraform-mono-repo-vs-multi-repo-the-great-debate
+
+
+### Other Reading
+ - https://www.terraform-best-practices.com/naming
+ - https://medium.com/react-courses/quick-ci-cd-from-github-to-prod-with-aws-ecr-ecs-creating-a-serverless-docker-container-698d360ee21e
+   - manaul config of ecr/ecs and task definitions
+
+ - https://particule.io/en/blog/cicd-ecr-ecs/
+   - github/terraform/cicd example using tags
+
+ - https://stevelasker.blog/2018/03/01/docker-tagging-best-practices-for-tagging-and-versioning-docker-images/ 
+   - container tagging best practices
+
+ - https://medium.com/jp-tech/docker-image-tagging-strategy-for-deploying-to-production-d2b90c115691
+ - https://container-registry.com/posts/container-image-versioning/
+ - https://www.reddit.com/r/Terraform/comments/xoumxf/deploying_ecs_tasks_what_is_the_right_way/
+
+### ALB Cloudwatch Alarms
+ - https://github.com/lorenzoaiello/terraform-aws-alb-alarms
+
+
+### Terragrunt
+ - https://medium.com/@man-wai/why-use-terragrunt-in-2022-5e97c61cc539
