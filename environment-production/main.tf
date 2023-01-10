@@ -16,9 +16,9 @@ terraform {
 }
 
 provider "aws" {
-  region  = var.app_aws_region
-  access_key = var.app_aws_access_key
-  secret_key = var.app_aws_secret_key
+  region  = var.env_aws_region
+  access_key = var.env_aws_access_key
+  secret_key = var.env_aws_secret_key
 
 
   default_tags {

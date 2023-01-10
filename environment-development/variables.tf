@@ -1,14 +1,14 @@
 
-variable "app_aws_region" {
+variable "env_aws_region" {
   type = string
   default = "us-east-1"
 }
 
-variable "app_aws_access_key" {
+variable "env_aws_access_key" {
   type = string
 }
 
-variable "app_aws_secret_key" {
+variable "env_aws_secret_key" {
   type = string
 }
 

@@ -1,4 +1,4 @@
-app_aws_region  = "us-east-1"
+env_aws_region  = "us-east-1"
 
 app_name        = "example"
 app_environment = "dev"
