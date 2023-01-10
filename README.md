@@ -4,28 +4,43 @@
 This repo is designed to serve as a best practice example and starting point for quickly bootstrapping new
 AWS environments via terraform and getting them to the point of usefulness for launching new web services.
 
-In its current form the terraform will provision everything you need to deploy multiple ECR containers
-via ECS Fargate behind an ALB all with SSL certs all in a VPC with approperiate public/private zones and security groups.
+In its current form, Terraform will provision everything you need to deploy multiple ECR containers
+via ECS Fargate behind an ALB all with SSL certs all in a VPC with appropriate public/private zones and security groups.
 
-This "starter kit" involves the following pieces:
- - an AWS account with multiple subaccounts
- - a purchased domain name (in this case examplr.co)
- - a GitHub account and these repos:
-   - this repo: https://github.com/examplr/examplr-terraform
-   - a simple "Hello World" app: https://github.com/examplr/examplr-app-helloworld
- - a Terraform Cloud account
 
-## TODO:
- - several identified in this document below
+## Status / Versions
+
+ v0.0.1 2023-01-10 
+  - These repos/instructions have been used to successfully boostrap multiple environments/services as intended
+    in this readme, but this approach, and the code, has not been code/peer reviewed by more experienced devops 
+    practitioners.
+
+## TODO
+ - peer review this effort with people who know more about TF/CICD than me (Wells)
  - hook up a github action in "examplr-app-helloworld" to auto build/push/deploy new container images
+ - figures out use of container stable tags vs CICD deploying a new task definition
+ - setup and document github branch protection rules for both repos
+ - replace the custom vpn module with the "standard" Terraform Registry VPN module.
+ 
+Several other TODOs are identified in this document below.
  
 
 ## Resource Overview
+
+Usernames and passwords for all the accounts here are kept in the Rocket Partners 1Password "examplr" vault.
+
+This "starter kit" involves the following pieces:
+- an AWS account with multiple subaccounts
+- a purchased domain name (in this case examplr.co)
+- a GitHub account and these repos:
+   - this repo: https://github.com/examplr/examplr-terraform
+   - a simple "Hello World" app: https://github.com/examplr/examplr-app-helloworld
+- a Terraform Cloud account
  
 ### AWS Accounts
 - exampr          - master biller account
-- examplr-network - hosts the root DNS zone, examplr.com and creates child hosted zones (ex dev.examplr.com) for each app environment
-- examplr-devops  - host ECR repos that will be shared by all environments
+- examplr-network - hosts the root DNS zone, examplr.com and NS records pointing to environment subdomains (ex dev.examplr.com)
+- examplr-devops  - hosts ECR repos that will be shared by all environments
 - examplr-dev     - demo dev account
 - examplr-prod    - demo prod account
 
@@ -64,8 +79,6 @@ A simple springboot app accessible as "dev.examplr.co/helloworld1" or "api.examp
 
 
 ### Terraform Cloud
-
-   User: wells+examplr@rocketpartners.io
 
    Each root folder in this project (other than /modules) has been setup as its own workspace in TF Cloud and connected to GitHub.
    The workspaces are setup to run plan on a pr to "release/${dir_name}" and then automatically deploy after a successful plan on a commit.
