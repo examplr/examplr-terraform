@@ -1,9 +1,9 @@
-aws_region        = "us-east-1"
+app_aws_region  = "us-east-1"
 
 app_name        = "example"
+app_environment = "dev"
 
 ecs_clusters = ["cluster1"]
-
 
 albs = [
   {
@@ -23,7 +23,7 @@ fargate_microservices = [
     alb_listener_rule_hosts = ["dev1.dev.examplr.co", "*.amazonaws.com"]
 
     ecs_cluster_name = "cluster1"
-    ecr_repository_url = "937423686755.dkr.ecr.us-east-1.amazonaws.com/helloworld"
+    ecr_repository_url = "223609663012.dkr.ecr.us-east-1.amazonaws.com/helloworld"
     ecr_repository_tag = "latest"
 
     task_name = "helloworld"
