@@ -1,7 +1,7 @@
 
 
 module "vpc" {
-  source = "../../modules/terraform-aws-vpc"
+  source = "./modules/terraform-aws-vpc"
 
 }
 

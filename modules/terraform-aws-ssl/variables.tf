@@ -10,4 +10,5 @@ variable "tag_name"{
 
 variable "tag_used_by"{
   type = string
+  default = ""
 }

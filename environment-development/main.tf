@@ -7,15 +7,6 @@ locals {
 terraform {
   required_version = "~> 1.3.6"
 
-  cloud {
-    organization = "examplr"
-
-
-    workspaces {
-      name = "example"
-    }
-  }
-
   required_providers {
     aws = {
       source  = "hashicorp/aws"

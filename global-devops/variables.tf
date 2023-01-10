@@ -1,14 +1,14 @@
 
-variable "dev_aws_region" {
+variable "devops_aws_region" {
   type = string
   default = "us-east-1"
 }
 
-variable "dev_aws_access_key" {
+variable "devops_aws_access_key" {
   type = string
 }
 
-variable "dev_aws_secret_key" {
+variable "devops_aws_secret_key" {
   type = string
 }
 
