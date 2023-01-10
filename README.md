@@ -10,12 +10,12 @@ via ECS Fargate behind an ALB all with SSL certs all in a VPC with appropriate p
 
 ## Status / Versions
 
- v0.0.1 2023-01-10 
+ v0.0.1 - 2023-01-10 
   - These repos/instructions have been used to successfully boostrap multiple environments/services as intended
     in this readme, but this approach, and the code, has not been code/peer reviewed by more experienced devops 
     practitioners.
 
-## TODO
+## To Do
  - peer review this effort with people who know more about TF/CICD than me (Wells)
  - hook up a github action in "examplr-app-helloworld" to auto build/push/deploy new container images
  - figures out use of container stable tags vs CICD deploying a new task definition
@@ -174,13 +174,10 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
  - https://www.terraform-best-practices.com/naming
  - https://medium.com/react-courses/quick-ci-cd-from-github-to-prod-with-aws-ecr-ecs-creating-a-serverless-docker-container-698d360ee21e
    - manaul config of ecr/ecs and task definitions
-
  - https://particule.io/en/blog/cicd-ecr-ecs/
    - github/terraform/cicd example using tags
-
  - https://stevelasker.blog/2018/03/01/docker-tagging-best-practices-for-tagging-and-versioning-docker-images/ 
    - container tagging best practices
-
  - https://medium.com/jp-tech/docker-image-tagging-strategy-for-deploying-to-production-d2b90c115691
  - https://container-registry.com/posts/container-image-versioning/
  - https://www.reddit.com/r/Terraform/comments/xoumxf/deploying_ecs_tasks_what_is_the_right_way/
