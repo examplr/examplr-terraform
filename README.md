@@ -7,6 +7,11 @@ AWS environments via terraform and getting them to the point of usefulness for l
 In its current form, Terraform will provision everything you need to deploy multiple ECR containers
 via ECS Fargate behind an ALB all with SSL certs all in a VPC with appropriate public/private zones and security groups.
 
+When you are done, you can access urls such as:
+ https://api.examplr.co/helloworld1/whatever
+ https://dev.examplr.co/helloworld1/whatever
+ https://dev2.dev.examplr.co/configurable_path/whatever
+
 
 ## Status / Versions
 
@@ -20,8 +25,9 @@ via ECS Fargate behind an ALB all with SSL certs all in a VPC with appropriate p
  - hook up a github action in "examplr-app-helloworld" to auto build/push/deploy new container images
  - figures out use of container stable tags vs CICD deploying a new task definition
  - setup and document github branch protection rules for both repos
- - replace the custom vpn module with the "standard" Terraform Registry VPN module
+ - replace the custom vpn module with the "standard" Terraform Registry VPN module 
  - add cloud watch alarms for each service
+ 
  
 Several other TODOs are identified in this document below.
  
