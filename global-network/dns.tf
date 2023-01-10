@@ -25,7 +25,7 @@ resource "aws_route53_zone" "prod" {
   provider = aws.prod
   name = "api.examplr.co"
   tags = {
-    Environment = "dev"
+    Environment = "prod"
   }
 }
 
