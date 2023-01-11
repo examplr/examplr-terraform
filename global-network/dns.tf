@@ -25,7 +25,7 @@ resource "aws_route53_zone" "prod" {
   provider = aws.prod
   name = "api.examplr.co"
   tags = {
-    Environment = "dev"
+    Environment = "prod"
   }
 }
 
@@ -34,5 +34,5 @@ resource "aws_route53_record" "prod-ns" {
   name    = "api.examplr.co"
   type    = "NS"
   ttl     = "30"
-  records = aws_route53_zone.dev.name_servers
+  records = aws_route53_zone.prod.name_servers
 }
