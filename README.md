@@ -136,11 +136,16 @@ A simple springboot app accessible as "dev.examplr.co/helloworld1" or "api.examp
 ... and force a service update after publishing so the new image gets deployed
 ```
 gradle build
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 937423686755.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest
-docker build -t 937423686755.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest .
-docker push 937423686755.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest
-aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force-new-deployment
+docker build -t 223609663012.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest .
 
+//tfuser@examplr-devops account
+export AWS_ACCESS_KEY_ID=[REPLACE WITH tfuser@examplr-devops accessKey]
+export AWS_SECRET_ACCESS_KEY=[REPLACE WITH tfuser@examplr-devops secretKey]
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 223609663012.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest
+
+docker push 223609663012.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest
+aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force-new-deployment
 ```
 
  

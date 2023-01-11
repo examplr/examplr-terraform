@@ -4,8 +4,17 @@ module "dns-lookup" {
   count = length(var.aliases_domain_names)
 
   domain_name = var.aliases_domain_names[count.index]
+}
 
-  depends_on = [aws_alb.alb]
+
+resource "aws_alb" "alb" {
+  name               = var.name
+  internal           = false
+  load_balancer_type = "application"
+
+  subnets = var.subnets
+  security_groups = [aws_security_group.egress_all.id, aws_security_group.ingress_80.id, aws_security_group.ingress_443.id, aws_security_group.ingress_8080.id]
+
 }
 
 resource "aws_route53_record" "alias" {
@@ -18,28 +27,9 @@ resource "aws_route53_record" "alias" {
     zone_id                = aws_alb.alb.zone_id
     evaluate_target_health = true
   }
+  depends_on = [aws_alb.alb, module.dns-lookup]
 }
 
-
-module "cert" {
-  source = "../../modules/terraform-aws-ssl"
-  domain_names = var.cert_domain_names
-
-  tag_used_by = var.name
-  depends_on = [module.dns-lookup]
-}
-
-
-
-resource "aws_alb" "alb" {
-  name               = var.name
-  internal           = false
-  load_balancer_type = "application"
-
-  subnets = var.subnets
-  security_groups = [aws_security_group.egress_all.id, aws_security_group.ingress_80.id, aws_security_group.ingress_443.id, aws_security_group.ingress_8080.id]
-
-}
 
 
 resource "aws_alb_listener" "http_listener" {
@@ -56,6 +46,15 @@ resource "aws_alb_listener" "http_listener" {
       status_code = "HTTP_301"
     }
   }
+}
+
+
+module "cert" {
+  source = "../../modules/terraform-aws-ssl"
+  domain_names = var.cert_domain_names
+
+  tag_used_by = var.name
+  depends_on = [module.dns-lookup]
 }
 
 
@@ -77,6 +76,7 @@ resource "aws_alb_listener" "https_listener" {
 
   depends_on = [module.cert]
 }
+
 
 resource "aws_security_group" "egress_all" {
   name        = "${var.name}-egress-all"

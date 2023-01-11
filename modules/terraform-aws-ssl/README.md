@@ -19,7 +19,7 @@ The first domain name in the list is the primary name on the cert.  All addition
 ```terraform
 module "ssl" {
   source = "./modules/terraform-aws-ssl"
-  domain_names = ["example.com", "*.example.com", "!dev.example.com", "api.dev.example.com"]
+  domain_names = ["examplr.co", "*.examplr.co", "!dev.examplr.co", "api.dev.examplr.co"]
 }
 ```
 You can use wildcards subject to the use cases supported by ACM.
