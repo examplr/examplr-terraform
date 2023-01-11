@@ -12,13 +12,6 @@ variable "subnets" {
   type = list(string)
 }
 
-/*
-variable "security_groups" {
-  description = "Security groups applied to the ALB. TODO: make this module generate these."
-  type = list(string)
-}
-*/
-
 variable "cert_domain_names" {
   description = "The domain names that should be on the ACM cert used by the HTTPs ALB listener."
   type = list(string)

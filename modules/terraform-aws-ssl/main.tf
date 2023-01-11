@@ -1,33 +1,45 @@
 
 
-module "dns" {
-  source = "./modules/dns"
+module "dns-lookup" {
+  source = "../terraform-aws-dns-zone-lookup"
   count = length(var.domain_names)
   domain_name = var.domain_names[count.index]
 }
 
+resource "aws_acm_certificate" "cert" {
+  domain_name = module.dns-lookup[0].domain_name
+  subject_alternative_names = slice(module.dns-lookup[*].domain_name, 1, length(module.dns-lookup[*].domain_name))
+  validation_method = "DNS"
 
-module "cert"{
-  source = "./modules/cert"
-  domain_names = module.dns[*].fqdn
-  zone_ids_map = zipmap(module.dns[*].fqdn, module.dns[*].zone_id)
-  tag_name = var.tag_name
-  tag_used_by = var.tag_used_by
+  tags = {
+    Name = "${module.dns-lookup[0].domain_name}-cert"
+    UsedBy = var.tag_used_by != "" ? var.tag_name : module.dns-lookup[0].domain_name
+  }
+
+  depends_on = [module.dns-lookup]
 }
 
-output "cert_arn" {
-  description = "The ARN of the issued certificate"
-  value = module.cert.cert_arn
+resource "aws_route53_record" "validation_records" {
+  for_each = {
+    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
+      domain = dvo.domain_name
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = lookup(zipmap(module.dns-lookup[*].domain_name, module.dns-lookup[*].zone_id), each.value.domain, null)
 }
 
-output "zone_names"{
-  value =  module.dns[*].zone_name
-}
 
-output "fqdns"{
-  value = module.dns[*].fqdn
-}
 
-output "zone_ids"{
-  value = module.dns[*].zone_id
+resource "aws_acm_certificate_validation" "validation" {
+  certificate_arn         = aws_acm_certificate.cert.arn
+  validation_record_fqdns = [for record in aws_route53_record.validation_records : record.fqdn]
 }

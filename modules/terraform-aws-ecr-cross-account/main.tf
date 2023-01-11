@@ -1,7 +1,7 @@
 
 # aws_ecr_repository creates the aws_ecr_repository resource
 resource "aws_ecr_repository" "this" {
-  name  = var.name
+  name  = var.repository_name
 }
 
 # ecs_ecr_read_perms defines the regular read and login perms for principals defined in var.allowed_read_principals
@@ -33,6 +33,7 @@ data "aws_iam_policy_document" "ecs_ecr_read_perms" {
 data "aws_iam_policy_document" "ecr_read_and_write_perms" {
 
   # The previously created ecs_ecr_read_perms will be merged into this document.
+  # TODO: fix this deprecation
   source_json = data.aws_iam_policy_document.ecs_ecr_read_perms.json
 
   statement {

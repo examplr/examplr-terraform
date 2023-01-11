@@ -1,7 +1,7 @@
 
 
 # The name of the ECR repository
-variable "name" {
+variable "repository_name" {
   description = "name defines the name of the repository, by default it will be interpolated to {namespace}-{name}"
 }
 

@@ -15,10 +15,13 @@ When you are done, you can access urls such as:
 
 ## Status / Versions
 
- v0.0.1 - 2023-01-10 
-  - These repos/instructions have been used to successfully boostrap multiple environments/services as intended
-    in this readme, but this approach, and the code, has not been code/peer reviewed by more experienced devops 
-    practitioners.
+v0.0.2 - 2023-01-11
+- Refactored module layout and updated READMEs for all modules.
+
+v0.0.1 - 2023-01-10 
+- These repos/instructions have been used to successfully boostrap multiple environments/services as intended
+  in this readme, but this approach, and the code, has not been code/peer reviewed by more experienced devops 
+  practitioners.
 
 ## To Do
  - peer review this effort with people who know more about TF/CICD than me (Wells)
@@ -28,7 +31,15 @@ When you are done, you can access urls such as:
  - replace the custom vpn module with the "standard" Terraform Registry VPN module 
  - add cloud watch alarms for each service
  
- 
+### Known Sub Optimal Things
+
+ - Module relative pathing - an 'init' seems to find and install relative path modules referencing '../../' but a 'plan'
+   does not.  I've seem some chatter about this online as a bug, the solution appears to be to use symlinks, which I have 
+   done here but it feels redundant to me.  Would prefer not to have to symlink modules for each workspace.
+
+
+
+
 Several other TODOs are identified in this document below.
  
 

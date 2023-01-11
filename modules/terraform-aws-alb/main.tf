@@ -1,22 +1,32 @@
 
-module "dns" {
-  source = "./modules/dns"
-
+module "dns-lookup" {
+  source = "../../modules/terraform-aws-dns-zone-lookup"
   count = length(var.aliases_domain_names)
 
-  alias_name = var.aliases_domain_names[count.index]
-  target_name = aws_alb.alb.dns_name
-  target_zone_id = aws_alb.alb.zone_id
+  domain_name = var.aliases_domain_names[count.index]
 
   depends_on = [aws_alb.alb]
 }
+
+resource "aws_route53_record" "alias" {
+  count = length(module.dns-lookup[*].domain_name)
+  zone_id = module.dns-lookup[count.index].zone_id
+  name    = module.dns-lookup[count.index].domain_name
+  type    = "A"
+  alias {
+    name                   = aws_alb.alb.dns_name
+    zone_id                = aws_alb.alb.zone_id
+    evaluate_target_health = true
+  }
+}
+
 
 module "cert" {
   source = "../../modules/terraform-aws-ssl"
   domain_names = var.cert_domain_names
 
   tag_used_by = var.name
-  depends_on = [module.dns]
+  depends_on = [module.dns-lookup]
 }
 
 
@@ -27,7 +37,7 @@ resource "aws_alb" "alb" {
   load_balancer_type = "application"
 
   subnets = var.subnets
-  security_groups = [aws_security_group.egress_all.id, aws_security_group.ingress_40.id, aws_security_group.ingress_443.id, aws_security_group.ingress_8080.id]
+  security_groups = [aws_security_group.egress_all.id, aws_security_group.ingress_80.id, aws_security_group.ingress_443.id, aws_security_group.ingress_8080.id]
 
 }
 
@@ -86,26 +96,26 @@ resource "aws_security_group" "egress_all" {
 }
 
 
-resource "aws_security_group" "ingress_40" {
-  name        = "${var.name}-http"
-  description = "Allow inbound port 40 traffic"
+resource "aws_security_group" "ingress_80" {
+  name        = "${var.name}-ingress-80"
+  description = "Allow inbound port 80 traffic"
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 40
-    to_port     = 40
+    from_port   = 80
+    to_port     = 80
     protocol    = "TCP"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
-    Name = "${var.name}-ingress_40"
+    Name = "${var.name}-ingress_80"
   }
 }
 
 resource "aws_security_group" "ingress_443" {
-  name        = "${var.name}-https"
-  description = "Allow inbound port 80 traffic"
+  name        = "${var.name}-ingress-443"
+  description = "Allow inbound port 443 traffic"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -121,8 +131,9 @@ resource "aws_security_group" "ingress_443" {
 }
 
 
+//TODO testing showed this is necessary for health checks...is that correct?
 resource "aws_security_group" "ingress_8080" {
-  name        = "${var.name}-ingress-api"
+  name        = "${var.name}-ingress-8080"
   description = "Allow inbound port 8080 traffic"
   vpc_id      = var.vpc_id
 
