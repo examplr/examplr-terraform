@@ -64,35 +64,47 @@ variable "additional_tags" {
 variable "albs" {
   description = "The ALBs to create.  Each name  Each name provided will be prefixed with '$${var.app_environment}-$${var.app_name}-' automatically. The resulting name must be unique to the AWS account."
   type        = list(object({
-    name               = string
-    alias_domain_names = list(string)
-    cert_domain_names  = list(string)
+    name        = string
+    dns_aliases = list(string)
+    listeners   = list(object({
+      port  = number
+      cert  = optional(list(string))
+      rules = optional(list(object({
+        alias        = string
+        paths        = optional(list(string))
+        hosts        = optional(list(string))
+        priority     = optional(number)
+        health_check = optional(string)
+      })))
+    }))
   }))
 }
+
 
 variable "ecs_clusters" {
   description = "The ECS clusters to create.  Each name provided will be prefixed with '$${var.app_environment}-$${var.app_name}-' automatically. The resulting name must be unique to the AWS account."
   type        = list(string)
 }
 
-variable "fargate_microservices" {
+variable "ecs_services" {
   description = "Definitions of container/tasks that should run as ECS Fargate services and connected to an ALB with autoscaling."
   type        = list(object({
 
-    name           = string
-    container_port = optional(number)
-    host_port      = optional(number)
-    cpu            = optional(number)
-    memory         = optional(number)
-    autoscale_min  = optional(number)
-    autoscale_max  = optional(number)
-    log_group      = optional(string)
-    health_check   = optional(string)
+    name          = string
+    alias         = optional(string)
+    port          = optional(number)
+    cpu           = optional(number)
+    memory        = optional(number)
+    autoscale_min = optional(number)
+    autoscale_max = optional(number)
+    log_group     = optional(string)
+    health_check  = optional(string)
 
     cluster_name   = optional(string)
     repository_url = optional(string)
     repository_tag = optional(string)
 
+    /*
     alb_name  = optional(string)
     alb_rules = list(object({
       port     = number
@@ -100,7 +112,7 @@ variable "fargate_microservices" {
       hosts    = optional(list(string))
       priority = optional(number)
     }))
+    */
 
   }))
-
 }

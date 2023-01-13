@@ -1,11 +1,19 @@
 
+variable "vpc_id" {
+  type = string
+}
 
-variable "alb_name" {
+variable "alb_listener_arn" {
+  type = string
+}
+
+variable "alias" {
   type = string
 }
 
 variable "port" {
-  type = string
+  type = number
+  default = null
 }
 
 variable "paths" {
@@ -23,6 +31,6 @@ variable "priority" {
   default = 100
 }
 
-variable "target_group_arn" {
+variable "health_check"{
   type = string
 }

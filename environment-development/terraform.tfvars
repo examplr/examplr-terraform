@@ -9,26 +9,40 @@ ecs_clusters = ["cluster1"]
 
 albs = [
   {
-    name               = "alb1"
-    alias_domain_names = ["!dev.examplr.co", "dev1.dev.examplr.co"]
-    cert_domain_names  = ["!dev.examplr.co", "dev1.dev.examplr.co"]
-  }
-]
+    name        = "alb1"
+    dns_aliases = ["dev1.dev.examplr.co"]
 
-fargate_microservices = [
-  {
-    name      = "helloworld"
-    alb_rules = [
+    listeners = [
       {
-        port = 443
+        port  = 80 //default behavior of 80 is to forward to 443
+      },
+      {
+        port  = 443
+        cert  = ["dev1.dev.examplr.co"]
+        rules = [
+          {
+            alias = "helloworld"
+            //paths = ["/*"]
+            //hosts = ""
+            //priority = 100
+
+          }
+        ]
       }
     ]
   }
+]
+
+
+ecs_services = [
+  {
+    name = "helloworld"
+  }
   # Example w/ all properties
   #  ,{
-  #    name           = "helloworld"
-  #    container_port = 8080
-  #    host_port      = 8080
+  #    name           = "helloworld" //will be expanded to "environment-app_name-name"
+  #    alias          = "helloworld" //will not be expanded, defaults to 'name' alone
+  #    port           = 8080
   #    cpu            = 1024
   #    memory         = 2048
   #    autoscale_min  = 1
@@ -40,21 +54,7 @@ fargate_microservices = [
   #    repository_url = "223609663012.dkr.ecr.us-east-1.amazonaws.com/helloworld"
   #    repository_tag = "latest"
   #
-  #    alb_name  = "alb1"
-  #    alb_rules = [
-  #            {
-  #              port     = 80
-  #              paths    = ["/*"]
-  #              hosts    = null
-  #              priority = 100
-  #            },
-  #            {
-  #              port     = 443
-  #              paths    = ["/*"]
-  #              hosts    = null
-  #              priority = 100
-  #            }
-  #    ]
   #  }
 ]
+
 

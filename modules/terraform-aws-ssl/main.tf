@@ -16,7 +16,11 @@ resource "aws_acm_certificate" "cert" {
     UsedBy = var.tag_used_by != "" ? var.tag_name : module.dns-lookup[0].domain_name
   }
 
-  depends_on = [module.dns-lookup]
+  //-- this is here so that users such as an ALB can change the names on their cert.  If this were not
+  //-- here, the existing cert would fail destroy on the apply because it is in use by the ALB.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_route53_record" "validation_records" {

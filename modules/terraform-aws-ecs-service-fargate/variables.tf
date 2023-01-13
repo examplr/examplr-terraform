@@ -1,52 +1,47 @@
-
-
 variable "name" {
   description = "The logical name given to the task."
   type        = string
 }
 
-
-variable "container_port" {
-  description = ""
-  type = number
-  default = 8080
+variable "target_group_arn" {
+  type = string
 }
 
-variable "host_port" {
-  description = ""
-  type = number
-  default = 8080
-}
 
+variable "port" {
+  description = ""
+  type        = number
+  default     = 8080
+}
 
 variable "cpu" {
   description = "The task CPU allocation"
-  type = number
-  default = 1024
+  type        = number
+  default     = 1024
 }
 
 variable "memory" {
   description = "The task memory allocation"
-  type = number
-  default = 2048
+  type        = number
+  default     = 2048
 }
 
 variable "autoscale_min" {
   description = "The minimum number of task instances"
-  type = number
-  default = 1
+  type        = number
+  default     = 1
 }
 
 variable "autoscale_max" {
   description = "The maximum number of task instances"
-  type = number
-  default = 2
+  type        = number
+  default     = 2
 }
 
 variable "log_group" {
   description = ""
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
 
 variable "health_check" {
@@ -67,6 +62,7 @@ variable "repository_tag" {
   type = string
 }
 
+/*
 variable "alb_name" {
   type = string
 }
@@ -79,11 +75,13 @@ variable "alb_rules" {
       priority = number
     }))
 }
+*/
 
+variable "vpc_id" {
+  type = string
+}
 
-
-
-variable "service_subnets" {
+variable "subnets" {
   description = ""
   type        = list(string)
 }

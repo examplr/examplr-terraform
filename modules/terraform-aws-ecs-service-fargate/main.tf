@@ -1,17 +1,8 @@
-data "aws_caller_identity" "current" {}
-
 data "aws_region" "current" {}
 
-data "aws_lb" "alb" {
-  name = var.alb_name
-}
-
 locals {
-  account_id = data.aws_caller_identity.current.account_id
-  region     = data.aws_region.current.name
-
-  host_port      = var.host_port != null ? var.host_port : 8080
-  container_port = var.container_port != null ? var.container_port : 8080
+  region         = data.aws_region.current.name
+  port           = var.port != null ? var.port : 8080
   cpu            = var.cpu != null ? var.cpu : 1024
   memory         = var.memory != null ? var.memory : 2048
   autoscale_min  = var.autoscale_min != null ? var.autoscale_min : 1
@@ -27,29 +18,7 @@ resource "aws_cloudwatch_log_group" "log_group" {
   name = local.log_group
 }
 
-# The main service.
-resource "aws_ecs_service" "service" {
-  name            = "${var.name}"
-  task_definition = aws_ecs_task_definition.task_definition.arn
-  cluster         = var.cluster_name
-  launch_type     = "FARGATE"
-
-  desired_count = local.autoscale_min
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
-    container_name   = local.ecr_repository_name
-    container_port   = local.container_port
-  }
-
-  network_configuration {
-    assign_public_ip = false
-    //TODO should this be tightened up to the container port???
-    security_groups  = data.aws_lb.alb.security_groups
-    subnets          = var.service_subnets
-  }
-}
-
+//"hostPort": ${local.host_port}
 
 # The task definition for our app.
 resource "aws_ecs_task_definition" "task_definition" {
@@ -62,8 +31,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       "image": "${var.repository_url}:${var.repository_tag}",
       "portMappings": [
         {
-          "containerPort": ${local.container_port},
-          "hostPort": ${local.host_port}
+          "containerPort": ${local.port}
         }
       ],
       "logConfiguration": {
@@ -86,17 +54,14 @@ EOF
 
   # This is required for Fargate containers (more on this later).
   network_mode = "awsvpc"
+
+  #  lifecycle {
+  #    create_before_destroy = true
+  #    ignore_changes        = [container_definitions]
+  #  }
+
 }
 
-# This is the role under which ECS will execute our  This role becomes more important
-# as we add integrations with other AWS services later on.
-
-# The assume_role_policy field works with the following aws_iam_policy_document to allow
-# ECS tasks to assume this role we're creating.
-resource "aws_iam_role" "task_execution_role" {
-  name               = "${var.name}-task-execution-role"
-  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
-}
 
 data "aws_iam_policy_document" "ecs_task_assume_role" {
   statement {
@@ -115,6 +80,16 @@ data "aws_iam_policy" "ecs_task_execution_role" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# This is the role under which ECS will execute our task. This role becomes more important
+# as we add integrations with other AWS services later on.
+
+# The assume_role_policy field works with the following aws_iam_policy_document to allow
+# ECS tasks to assume this role we're creating.
+resource "aws_iam_role" "task_execution_role" {
+  name               = "${var.name}-task-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
+}
+
 # Attach the above policy to the execution role.
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
   role       = aws_iam_role.task_execution_role.name
@@ -122,31 +97,59 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
 }
 
 
-resource "aws_lb_target_group" "target_group" {
-  name        = "${var.name}"
-  port        = local.container_port
-  protocol    = "HTTP"
-  target_type = "ip"
-  vpc_id      = data.aws_lb.alb.vpc_id
+# The main service.
+resource "aws_ecs_service" "service" {
+  name            = "${var.name}"
+  task_definition = aws_ecs_task_definition.task_definition.arn
+  cluster         = var.cluster_name
+  launch_type     = "FARGATE"
+  desired_count   = local.autoscale_min
 
-  health_check {
-    enabled = true
-    path    = local.health_check
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name   = local.ecr_repository_name
+    container_port   = local.port
+  }
+
+  network_configuration {
+    assign_public_ip = false
+    security_groups  = [aws_security_group.egress.id, aws_security_group.ingress.id]
+    subnets          = var.subnets
   }
 }
 
-module "listeners" {
-  source = "../terraform-aws-alb-listener-rule"
+resource "aws_security_group" "egress" {
+  name        = "${var.name}-egress"
+  description = "Allow all outbound traffic"
+  vpc_id      = var.vpc_id
 
-  count = length(var.alb_rules)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  alb_name         = var.alb_name
-  port             = var.alb_rules[count.index].port
-  paths            = var.alb_rules[count.index].paths
-  hosts            = var.alb_rules[count.index].hosts
-  priority         = var.alb_rules[count.index].priority
-  target_group_arn = aws_lb_target_group.target_group.arn
+  tags = {
+    Name = "${var.name}-egress-all"
+  }
+}
 
+resource "aws_security_group" "ingress" {
+  name        = "${var.name}-ingress-${local.port}"
+  description = "Allow inbound port ${local.port} traffic"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = local.port
+    to_port     = local.port
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.name}-ingress-${local.port}"
+  }
 }
 
 resource "aws_appautoscaling_target" "ecs_target" {
@@ -155,6 +158,8 @@ resource "aws_appautoscaling_target" "ecs_target" {
   resource_id        = "service/${var.cluster_name}/${var.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
+
+  depends_on = [aws_ecs_service.service]
 }
 
 resource "aws_appautoscaling_policy" "ecs_policy_memory" {
@@ -188,4 +193,5 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
     target_value = 80
   }
 }
+
 

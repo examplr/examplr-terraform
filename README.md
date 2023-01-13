@@ -15,6 +15,11 @@ When you are done, you can access urls such as:
 
 ## Status / Versions
 
+v0.0.3 - 2023-01-12
+- I realized the module layout I had constructed created dependencies that were hard for TF to evaluate causing plans
+  to modify/destroy/create WAY more than was necessary.  I restructured the modules to flatten the dependencies which 
+  forced a change to the root vars.
+
 v0.0.2 - 2023-01-11
 - Refactored module layout and updated READMEs for all modules.
 
@@ -30,6 +35,7 @@ v0.0.1 - 2023-01-10
  - setup and document github branch protection rules for both repos
  - replace the custom vpn module with the "standard" Terraform Registry VPN module 
  - add cloud watch alarms for each service
+ - running an apply after changing SSL cert host names seems to change to many things...why?
  
 ### Known Sub Optimal Things
 
@@ -37,7 +43,8 @@ v0.0.1 - 2023-01-10
    does not.  I've seem some chatter about this online as a bug, the solution appears to be to use symlinks, which I have 
    done here but it feels redundant to me.  Would prefer not to have to symlink modules for each workspace.
 
-
+ - When modifying an ssl cert, the validation completes before the cert is ready in ACM and causes the apply to fail.  
+   When you run apply immediately again, it works.  I've tried adding a sleep but results have been inconsistent
 
 
 Several other TODOs are identified in this document below.
@@ -148,7 +155,12 @@ docker push 223609663012.dkr.ecr.us-east-1.amazonaws.com/helloworld:latest
 aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force-new-deployment
 ```
 
- 
+### Best Practices For Scaling Out
+ - Have all of your services use a different port...and maybe a different container port. This
+   way, you can run all of your services locally during development 
+
+### Lessons Learned
+ - Your module dependencies need to be as flat as possible or TF may get confused and plan to modify or create/destroy things it does not need to
 
 ## Research Links
 
@@ -171,6 +183,7 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
  - https://www.architect.io/blog/2021-03-30/create-and-manage-an-aws-ecs-cluster-with-terraform/
  - https://alexhladun.medium.com/create-a-vpc-endpoint-for-ecr-with-terraform-and-save-nat-gateway-1bc254c1f42
  - https://engineering.finleap.com/posts/2020-02-20-ecs-fargate-terraform/
+ - https://github.com/npalm/terraform-aws-ecs-service
 
 ### ECR Image Tagging
  - https://blog.scottlowe.org/2017/11/08/how-tag-docker-images-git-commit-information/
@@ -211,3 +224,20 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
 
 ### Terragrunt
  - https://medium.com/@man-wai/why-use-terragrunt-in-2022-5e97c61cc539
+
+### Terraform CICD Interference
+ - https://www.google.com/search?q=aws_ecs_task_definition+ignore_changes
+ - Has a reasonable solution - https://github.com/hashicorp/terraform-provider-aws/issues/632
+ - https://github.com/hashicorp/terraform-provider-aws/issues/258
+ - https://github.com/hashicorp/terraform/issues/13005
+ - https://www.reddit.com/r/aws/comments/nlco6r/terraform_and_ecs_dont_change_task_revision/
+ - https://www.reddit.com/r/devops/comments/fleac9/create_aws_ecs_task_definition_and_service_in/
+
+### Adding Multiple SSL Certs to an ALB Listener
+ - https://stackoverflow.com/questions/66268417/how-do-i-add-a-list-of-ssl-certificates-to-a-list-of-of-alb-listeners-i-have-cre
+ 
+### CodeDeploy 
+ - https://medium.com/@jaclynejimenez/what-i-learned-using-aws-ecs-fargate-blue-green-deployment-with-codedeploy-65dde6781fcc
+
+### Interesting Tools Discovered
+ - https://github.com/fabfuel/ecs-deploy

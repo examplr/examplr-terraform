@@ -4,13 +4,12 @@ module "alb" {
 
   count = length(var.albs)
 
-  name =  "${local.environment}-${var.app_name}-${var.albs[count.index].name}-alb"
-  aliases_domain_names = var.albs[count.index].alias_domain_names
-  cert_domain_names  =  var.albs[count.index].cert_domain_names
-
+  vpc_id = module.vpc.vpc_id
   subnets = module.vpc.public_subnets
 
-  vpc_id = module.vpc.vpc_id
+  name =  "${local.environment}-${var.app_name}-${var.albs[count.index].name}-alb"
+  dns_names = var.albs[count.index].dns_aliases
 
-  depends_on = [module.vpc]
+  listeners = var.albs[count.index].listeners
+
 }

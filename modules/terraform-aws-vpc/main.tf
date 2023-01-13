@@ -88,7 +88,7 @@ resource "aws_nat_gateway" "ngw" {
   subnet_id     = aws_subnet.public_d.id
   allocation_id = aws_eip.nat.id
 
-  depends_on = [aws_internet_gateway.igw]
+//  depends_on = [aws_internet_gateway.igw]
 }
 
 resource "aws_route" "public_igw" {
@@ -102,19 +102,3 @@ resource "aws_route" "private_ngw" {
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.ngw.id
 }
-
-/*
-resource "aws_security_group" "http" {
-  name        = "http"
-  description = "HTTP traffic"
-  vpc_id      = aws_vpc.app_vpc.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "TCP"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-*/
-
