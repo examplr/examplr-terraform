@@ -1,0 +1,26 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+          "Sid": "Deny",
+          "Action": [
+            "s3:ListBucket",
+            "s3:GetBucketLocation"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::examplr-helloworld-${app_environment}"
+        },
+        {
+          "Sid": "S3Use",
+          "Action": [
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:GetObject",
+            "s3:GetObjectAcl",
+            "s3:DeleteObject"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::examplr-helloworld-${app_environment}/*"
+        }
+    ]
+}

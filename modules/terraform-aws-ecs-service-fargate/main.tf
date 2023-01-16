@@ -1,14 +1,14 @@
 data "aws_region" "current" {}
 
 locals {
-  region         = data.aws_region.current.name
-  port           = var.port != null ? var.port : 8080
-  cpu            = var.cpu != null ? var.cpu : 1024
-  memory         = var.memory != null ? var.memory : 2048
-  autoscale_min  = var.autoscale_min != null ? var.autoscale_min : 1
-  autoscale_max  = var.autoscale_max != null ? var.autoscale_max : 2
-  log_group      = var.log_group != null ? var.log_group : var.name
-  health_check   = var.health_check != null ? var.health_check : "/health"
+  region        = data.aws_region.current.name
+  port          = var.port != null ? var.port : 8080
+  cpu           = var.cpu != null ? var.cpu : 1024
+  memory        = var.memory != null ? var.memory : 2048
+  autoscale_min = var.autoscale_min != null ? var.autoscale_min : 1
+  autoscale_max = var.autoscale_max != null ? var.autoscale_max : 2
+  log_group     = var.log_group != null ? var.log_group : var.name
+  health_check  = var.health_check != null ? var.health_check : "/health"
 
   ecr_repository_name = split("/", var.repository_url)[1]
 }
@@ -18,7 +18,6 @@ resource "aws_cloudwatch_log_group" "log_group" {
   name = local.log_group
 }
 
-//"hostPort": ${local.host_port}
 
 # The task definition for our app.
 resource "aws_ecs_task_definition" "task_definition" {
@@ -46,14 +45,12 @@ resource "aws_ecs_task_definition" "task_definition" {
   ]
 EOF
 
-  execution_role_arn = aws_iam_role.task_execution_role.arn
-
   cpu                      = local.cpu
   memory                   = local.memory
   requires_compatibilities = ["FARGATE"]
-
-  # This is required for Fargate containers (more on this later).
-  network_mode = "awsvpc"
+  network_mode             = "awsvpc"
+  execution_role_arn = aws_iam_role.execution_role.arn
+  task_role_arn      = aws_iam_role.task_role.arn
 
   #  lifecycle {
   #    create_before_destroy = true
@@ -63,7 +60,7 @@ EOF
 }
 
 
-data "aws_iam_policy_document" "ecs_task_assume_role" {
+data "aws_iam_policy_document" "assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -74,26 +71,30 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
   }
 }
 
-# Normally we'd prefer not to hardcode an ARN in our Terraform, but since this is an AWS-managed
-# policy, it's okay.
-data "aws_iam_policy" "ecs_task_execution_role" {
-  arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-# This is the role under which ECS will execute our task. This role becomes more important
-# as we add integrations with other AWS services later on.
-
-# The assume_role_policy field works with the following aws_iam_policy_document to allow
-# ECS tasks to assume this role we're creating.
-resource "aws_iam_role" "task_execution_role" {
-  name               = "${var.name}-task-execution-role"
-  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
+resource "aws_iam_role" "execution_role" {
+  name               = "${var.name}-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
 # Attach the above policy to the execution role.
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
-  role       = aws_iam_role.task_execution_role.name
-  policy_arn = data.aws_iam_policy.ecs_task_execution_role.arn
+resource "aws_iam_role_policy_attachment" "attach_execution_policy" {
+  role       = aws_iam_role.execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role" "task_role" {
+  name               = "${var.name}-task-role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+resource "aws_iam_policy" "task_policy" {
+  name   = "${var.name}-task-policy"
+  policy = var.policy
+}
+
+resource "aws_iam_role_policy_attachment" "attach_task_policy" {
+  role       = aws_iam_role.task_role.name
+  policy_arn = aws_iam_policy.task_policy.arn
 }
 
 

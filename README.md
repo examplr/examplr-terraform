@@ -15,6 +15,11 @@ When you are done, you can access urls such as:
 
 ## Status / Versions
 
+v0.0.4 - 2023-01-16
+- Updated to use terraform registry best practice vpn module
+- Added support for passing in a policy that gets attached to the ecs task in to terraform-aws-ecs-service-fargate
+- Added an example policies/ecs/helloworld.json.tftpl to show how to create/attach a policy to the task. 
+
 v0.0.3 - 2023-01-12
 - I realized the module layout I had constructed created dependencies that were hard for TF to evaluate causing plans
   to modify/destroy/create WAY more than was necessary.  I restructured the modules to flatten the dependencies which 
@@ -164,6 +169,7 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
 
 ## Research Links
 
+
 ### Multi AWS Account Setup
 - https://thenewstack.io/terraform-on-aws-multi-account-setup-and-other-advanced-tips/
 - https://jhooq.com/terraform-aws-multi-account/
@@ -176,6 +182,7 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
  - https://itnext.io/creating-an-ecs-fargate-service-for-container-applications-using-terraform-and-terragrunt-2af5db3b35c0
  - https://www.architect.io/blog/2021-03-30/create-and-manage-an-aws-ecs-cluster-with-terraform/
 
+
 ### Terraforming Fargate - Also Helpful
  - https://www.wbotelhos.com/aws-ecs-with-terraform
  - https://hands-on.cloud/managing-amazon-ecs-using-terraform/
@@ -184,6 +191,9 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
  - https://alexhladun.medium.com/create-a-vpc-endpoint-for-ecr-with-terraform-and-save-nat-gateway-1bc254c1f42
  - https://engineering.finleap.com/posts/2020-02-20-ecs-fargate-terraform/
  - https://github.com/npalm/terraform-aws-ecs-service
+ - https://registry.terraform.io/modules/cn-terraform/ecs-fargate/aws/latest
+ - https://cadu.dev/easy-deploy-your-docker-applications-to-aws-using-ecs-and-fargate/
+ - https://github.com/zambien/terraform-ecs-iam-example
 
 ### ECR Image Tagging
  - https://blog.scottlowe.org/2017/11/08/how-tag-docker-images-git-commit-information/
@@ -239,5 +249,15 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
 ### CodeDeploy 
  - https://medium.com/@jaclynejimenez/what-i-learned-using-aws-ecs-fargate-blue-green-deployment-with-codedeploy-65dde6781fcc
 
+### VPC CIDR Block Planning
+- https://www.linkedin.com/pulse/aws-vpc-best-practice-journal-eric-l/
+
 ### Interesting Tools Discovered
  - https://github.com/fabfuel/ecs-deploy
+
+### Github Actions & Environments
+ - Deployment Manual Approval
+   - https://docs.github.com/en/actions/managing-workflow-runs/reviewing-deployments
+   - https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
+   - https://cloudlumberjack.com/posts/github-actions-approvals/
+   - https://docs.github.com/en/actions/deployment/managing-your-deployments/viewing-deployment-history

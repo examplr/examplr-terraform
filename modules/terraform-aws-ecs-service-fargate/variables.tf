@@ -3,10 +3,9 @@ variable "name" {
   type        = string
 }
 
-variable "target_group_arn" {
+variable "alias" {
   type = string
 }
-
 
 variable "port" {
   description = ""
@@ -62,20 +61,6 @@ variable "repository_tag" {
   type = string
 }
 
-/*
-variable "alb_name" {
-  type = string
-}
-
-variable "alb_rules" {
-  type = list(object({
-      port          = number
-      paths    = list(string)
-      hosts    = list(string)
-      priority = number
-    }))
-}
-*/
 
 variable "vpc_id" {
   type = string
@@ -86,4 +71,12 @@ variable "subnets" {
   type        = list(string)
 }
 
+variable "target_group_arn" {
+  type = string
+}
 
+
+variable "policy" {
+  type = string
+  default = null
+}

@@ -25,7 +25,7 @@ albs = [
             //paths = ["/*"]
             //hosts = ""
             //priority = 100
-
+            //port = 8080  //this is the container port, not the alb listner port
           }
         ]
       }
@@ -53,6 +53,8 @@ ecs_services = [
   #    cluster_name   = "cluster1"
   #    repository_url = "223609663012.dkr.ecr.us-east-1.amazonaws.com/helloworld"
   #    repository_tag = "latest"
+  #
+  #    policy         = an optional additional policy to attach to your task, if '/policies/ecs/${alias}.json.tpfl' exists, it will be used
   #
   #  }
 ]
