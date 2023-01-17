@@ -1,6 +1,6 @@
 
-output "alias" {
-  value = var.alias
+output "service" {
+  value = var.service
 }
 
 

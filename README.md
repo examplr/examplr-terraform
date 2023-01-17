@@ -251,6 +251,11 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
 ### Interesting Tools Discovered
  - https://github.com/fabfuel/ecs-deploy
 
+### Publish a static website to S3
+- https://dev.to/johnkevinlosito/deploy-static-website-to-s3-using-github-actions-4a0e
+- https://medium.com/avmconsulting-blog/automate-static-website-deployment-from-github-to-s3-using-aws-codepipeline-16acca25ebc1
+- https://www.alexhyett.com/github-actions-deploy-to-s3/
+
 ### Github Actions & Environments
  - Deployment Manual Approval
    - https://docs.github.com/en/actions/managing-workflow-runs/reviewing-deployments

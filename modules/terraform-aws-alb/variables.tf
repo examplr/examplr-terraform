@@ -22,7 +22,8 @@ variable "listeners" {
     port  = number
     cert  = optional(list(string))
     rules = list(object({
-      alias        = string
+      service      = string
+      port         = number
       paths        = optional(list(string))
       hosts        = optional(list(string))
       priority     = optional(number)

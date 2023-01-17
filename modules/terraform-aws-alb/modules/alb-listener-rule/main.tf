@@ -13,7 +13,7 @@ locals {
 }
 
 resource "aws_lb_target_group" "target_group" {
-  name        = "${var.alias}-tg"
+  name        = "${var.service}-tg"
   port        = local.container_port
   protocol    = "HTTP"
   target_type = "ip"

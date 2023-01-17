@@ -3,10 +3,6 @@ variable "name" {
   type        = string
 }
 
-variable "alias" {
-  type = string
-}
-
 variable "port" {
   description = ""
   type        = number

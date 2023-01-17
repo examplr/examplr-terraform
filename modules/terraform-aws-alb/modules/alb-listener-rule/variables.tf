@@ -7,7 +7,7 @@ variable "alb_listener_arn" {
   type = string
 }
 
-variable "alias" {
+variable "service" {
   type = string
 }
 

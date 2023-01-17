@@ -70,7 +70,7 @@ module "rules" {
   vpc_id           = var.vpc_id
   alb_listener_arn = concat(aws_alb_listener.http[*].arn, aws_alb_listener.https[*].arn)[0]
 
-  alias        = var.rules[count.index].alias
+  service      = var.rules[count.index].service
   port         = var.rules[count.index].port
   paths        = var.rules[count.index].paths
   hosts        = var.rules[count.index].hosts

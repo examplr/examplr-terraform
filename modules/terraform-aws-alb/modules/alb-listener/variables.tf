@@ -22,11 +22,11 @@ variable "cert_names" {
 variable "rules" {
   type = list(object(
     {
-      alias        = string
+      service      = string
+      port         = optional(number)
       paths        = optional(list(string))
       hosts        = optional(list(string))
       priority     = optional(number)
       health_check = optional(string)
-      port         = optional(number)
     }))
 }

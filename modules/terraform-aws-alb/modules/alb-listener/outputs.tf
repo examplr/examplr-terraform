@@ -1,6 +1,6 @@
 
-output "alias_to_target_group_arn_map"{
-  value = zipmap(module.rules[*].alias, module.rules[*].target_group_arn)
+output "service_to_target_group_arn_map"{
+  value = zipmap(module.rules[*].service, module.rules[*].target_group_arn)
 }
 
 output "listener_arn"{

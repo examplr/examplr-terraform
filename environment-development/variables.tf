@@ -70,7 +70,8 @@ variable "albs" {
       port  = number
       cert  = optional(list(string))
       rules = optional(list(object({
-        alias        = string
+        service      = string
+        port         = number
         paths        = optional(list(string))
         hosts        = optional(list(string))
         priority     = optional(number)
@@ -91,7 +92,6 @@ variable "ecs_services" {
   type        = list(object({
 
     name          = string
-    alias         = optional(string)
     port          = optional(number)
     cpu           = optional(number)
     memory        = optional(number)

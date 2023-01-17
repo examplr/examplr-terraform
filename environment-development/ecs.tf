@@ -13,9 +13,8 @@ module "ecs-fargate-service" {
   subnets = module.vpc.private_subnets
 
   name  = "${local.environment}-${var.app_name}-${var.ecs_services[count.index].name}-ecs"
-  alias = var.ecs_services[count.index].alias != null ? var.ecs_services[count.index].alias : var.ecs_services[count.index].name
 
-  target_group_arn = lookup(merge(module.alb[*].alias_to_target_group_arn_map...), var.ecs_services[count.index].alias != null ? var.ecs_services[count.index].alias : var.ecs_services[count.index].name, null)
+  target_group_arn = lookup(merge(module.alb[*].service_to_target_group_arn_map...), var.ecs_services[count.index].name, null)
 
   port          = var.ecs_services[count.index].port
   cpu           = var.ecs_services[count.index].cpu
@@ -45,8 +44,7 @@ module "ecs-fargate-service" {
 
 
   policy = templatefile("../policies/ecs/${var.ecs_services[count.index].name}.json.tftpl", {
-    name            = "${local.environment}-${var.app_name}-${var.ecs_services[count.index].name}-ecs"
-    alias           = var.ecs_services[count.index].name
+    name            = var.ecs_services[count.index].name
     app_environment = local.environment
     app_name        = var.app_name
   })
