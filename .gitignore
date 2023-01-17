@@ -30,3 +30,5 @@ override.tf.json
 /.idea/
 /SECRETS.md
 /secrets.sh
+/environment-development/.terraform/
+/environment-development/.terraform.lock.hcl

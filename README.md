@@ -44,10 +44,6 @@ v0.0.1 - 2023-01-10
  
 ### Known Sub Optimal Things
 
- - Module relative pathing - an 'init' seems to find and install relative path modules referencing '../../' but a 'plan'
-   does not.  I've seem some chatter about this online as a bug, the solution appears to be to use symlinks, which I have 
-   done here but it feels redundant to me.  Would prefer not to have to symlink modules for each workspace.
-
  - When modifying an ssl cert, the validation completes before the cert is ready in ACM and causes the apply to fail.  
    When you run apply immediately again, it works.  I've tried adding a sleep but results have been inconsistent
 
