@@ -1,31 +1,32 @@
-env_aws_region = "us-east-1"
+app_region = "us-east-1"
 
-app_name        = "example"
-app_environment = "dev"
+app_name   = "examplr"
+app_env    = "dev"
+app_domain = "dev.examplr.co"
 
-devops_account_id = "223609663012"
+vpc_cidr             = "10.0.0.0/16"
+vpc_public_subnets   = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+vpc_private_subnets  = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
+vpc_database_subnets = ["10.0.21.0/24", "10.0.22.0/24", "10.0.23.0/24"]
 
-ecs_clusters = ["cluster1"]
+vpn_host = "66.42.95.182"
 
 albs = [
   {
-    name        = "alb1"
-    dns_aliases = ["dev1.dev.examplr.co"]
+    name        = "alb"
+    dns_aliases = ["!dev.examplr.co", "*.dev.examplr.co"]
 
     listeners = [
       {
-        port  = 80 //default behavior of 80 is to forward to 443
+        port = 80 //default behavior of 80 is to forward to 443
       },
       {
         port  = 443
-        cert  = ["dev1.dev.examplr.co"]
+        cert  = ["!dev.examplr.co", "*.dev.examplr.co"]
         rules = [
           {
-            alias = "helloworld"
-            //paths = ["/*"]
-            //hosts = ""
-            //priority = 100
-            //port = 8080  //this is the container port, not the alb listner port
+            service = "helloworld"
+            port    = 8080
           }
         ]
       }
@@ -33,30 +34,12 @@ albs = [
   }
 ]
 
-
-ecs_services = [
+ecr_account_id = "223609663012"
+ecs_clusters   = ["cluster"]
+ecs_services   = [
   {
     name = "helloworld"
   }
-  # Example w/ all properties
-  #  ,{
-  #    name           = "helloworld" //will be expanded to "environment-app_name-name"
-  #    alias          = "helloworld" //will not be expanded, defaults to 'name' alone
-  #    port           = 8080
-  #    cpu            = 1024
-  #    memory         = 2048
-  #    autoscale_min  = 1
-  #    autoscale_max  = 2
-  #    log_group      = "helloworld"
-  #    health_check   = "/health"
-  #
-  #    cluster_name   = "cluster1"
-  #    repository_url = "223609663012.dkr.ecr.us-east-1.amazonaws.com/helloworld"
-  #    repository_tag = "latest"
-  #
-  #    policy         = an optional additional policy to attach to your task, if '/policies/ecs/${alias}.json.tpfl' exists, it will be used
-  #
-  #  }
 ]
 
 

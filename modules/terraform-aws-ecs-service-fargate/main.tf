@@ -1,17 +1,17 @@
-data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
 
 locals {
-  region        = data.aws_region.current.name
+  profile       = var.profile != null ? var.profile : var.app_env
   port          = var.port != null ? var.port : 8080
   cpu           = var.cpu != null ? var.cpu : 1024
   memory        = var.memory != null ? var.memory : 2048
   autoscale_min = var.autoscale_min != null ? var.autoscale_min : 1
   autoscale_max = var.autoscale_max != null ? var.autoscale_max : 2
   log_group     = var.log_group != null ? var.log_group : var.name
-  health_check  = var.health_check != null ? var.health_check : "/health"
 
   ecr_repository_name = split("/", var.repository_url)[1]
 }
+
 
 # Log groups hold logs from our app.
 resource "aws_cloudwatch_log_group" "log_group" {
@@ -23,34 +23,26 @@ resource "aws_cloudwatch_log_group" "log_group" {
 resource "aws_ecs_task_definition" "task_definition" {
   family = "${var.name}"
 
-  container_definitions = <<EOF
-  [
-    {
-      "name": "${local.ecr_repository_name}",
-      "image": "${var.repository_url}:${var.repository_tag}",
-      "portMappings": [
-        {
-          "containerPort": ${local.port}
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-region": "${local.region}",
-          "awslogs-group": "${local.log_group}",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
-    }
-  ]
-EOF
+  container_definitions = templatefile("../files/ecs/containers/${local.ecr_repository_name}.json.tftpl", {
+    profile             = local.profile
+    account_id          = data.aws_caller_identity.current.account_id
+    app_region          = var.app_region
+    app_name            = var.app_name
+    app_env             = var.app_env
+    ecr_repository_name = local.ecr_repository_name
+    repository_url      = var.repository_url
+    repository_tag      = var.repository_tag
+    container_port      = local.port
+    log_group           = local.log_group
+    secret_arn          = var.secret_arn
+  })
 
   cpu                      = local.cpu
   memory                   = local.memory
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  execution_role_arn = aws_iam_role.execution_role.arn
-  task_role_arn      = aws_iam_role.task_role.arn
+  execution_role_arn       = aws_iam_role.execution_role.arn
+  task_role_arn            = aws_iam_role.task_role.arn
 
   #  lifecycle {
   #    create_before_destroy = true
@@ -71,16 +63,19 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
+
 resource "aws_iam_role" "execution_role" {
   name               = "${var.name}-execution-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
+
 
 # Attach the above policy to the execution role.
 resource "aws_iam_role_policy_attachment" "attach_execution_policy" {
   role       = aws_iam_role.execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
 
 resource "aws_iam_role" "task_role" {
   name               = "${var.name}-task-role"
@@ -89,8 +84,13 @@ resource "aws_iam_role" "task_role" {
 
 resource "aws_iam_policy" "task_policy" {
   name   = "${var.name}-task-policy"
-  policy = var.policy
+  policy = templatefile("../files/ecs/policies/${local.ecr_repository_name}.json.tftpl", {
+    name     = local.ecr_repository_name
+    app_name = var.app_name
+    app_env  = var.app_env
+  })
 }
+
 
 resource "aws_iam_role_policy_attachment" "attach_task_policy" {
   role       = aws_iam_role.task_role.name
@@ -193,6 +193,15 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
 
     target_value = 80
   }
+}
+
+
+module "secrets" {
+  source = "./modules/secret"
+
+  secret_arn              = var.secret_arn
+  ecs_task_execution_role = "${var.name}-execution-role"
+  depends_on              = [aws_iam_role.execution_role]
 }
 
 

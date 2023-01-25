@@ -56,5 +56,4 @@ variable "ecr_repositories" {
     allowed_read_principals = list(string)
     allowed_write_principals = list(string)
   }))
-
 }

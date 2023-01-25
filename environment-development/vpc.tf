@@ -1,15 +1,29 @@
 
-
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 3.0"
 
-  name = "${var.app_environment}-${var.app_name}-vpc"
-  cidr = "10.0.0.0/16"
+  name = "${var.app_env}-${var.app_name}-vpc"
+  cidr = var.vpc_cidr
 
-  azs             = ["us-east-1a", "us-east-1b", "us-east-1c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  azs              = ["${var.app_region}a", "${var.app_region}b", "${var.app_region}c"]
+  private_subnets  = var.vpc_private_subnets
+  public_subnets   = var.vpc_public_subnets
+  database_subnets = var.vpc_database_subnets
+
+  create_database_subnet_group = true
+  database_subnet_group_name = "${var.app_env}-${var.app_name}-db-${var.app_region}-sg"
+
+  manage_default_network_acl = true
+  default_network_acl_tags   = { Name = "${var.app_env}-${var.app_name}-default" }
+
+  manage_default_route_table = true
+  default_route_table_tags   = { Name = "${var.app_env}-${var.app_name}-default" }
+
+  manage_default_security_group = true
+  default_security_group_tags   = { Name = "${var.app_env}-${var.app_name}-default" }
 
   enable_nat_gateway = true
-  enable_vpn_gateway = false
+  single_nat_gateway = true
+
 }

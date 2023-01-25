@@ -1,5 +1,23 @@
+
+variable "app_name" {
+  type = string
+}
+
+variable "app_env" {
+  type = string
+}
+
+variable "app_region" {
+  type = string
+}
+
 variable "name" {
   description = "The logical name given to the task."
+  type        = string
+}
+
+variable "profile" {
+  description = "Defaults to app_env"
   type        = string
 }
 
@@ -39,12 +57,6 @@ variable "log_group" {
   default     = ""
 }
 
-variable "health_check" {
-  description = ""
-  type        = string
-  default     = "/health"
-}
-
 variable "cluster_name" {
   type = string
 }
@@ -56,7 +68,6 @@ variable "repository_url" {
 variable "repository_tag" {
   type = string
 }
-
 
 variable "vpc_id" {
   type = string
@@ -71,8 +82,6 @@ variable "target_group_arn" {
   type = string
 }
 
-
-variable "policy" {
+variable "secret_arn"{
   type = string
-  default = null
 }

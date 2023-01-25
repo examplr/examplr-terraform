@@ -1,0 +1,35 @@
+[
+    {
+      "name": "${ecr_repository_name}",
+      "image": "${repository_url}:${repository_tag}",
+      "portMappings": [
+        {
+            "containerPort": ${container_port}
+        }
+      ],
+      "environment" : [
+            {
+              "name" : "spring_profiles_active",
+              "value" : "${profile}"
+            }
+          ],
+      "secrets": [
+            {
+              "name": "mysql.user",
+              "valueFrom": "${secret_arn}:mysql.user::"
+            },
+            {
+              "name": "mysql.pass",
+              "valueFrom": "${secret_arn}:mysql.pass::"
+            }
+          ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-region": "${app_region}",
+            "awslogs-group": "${log_group}",
+            "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+]

@@ -8,12 +8,17 @@ In its current form, Terraform will provision everything you need to deploy mult
 via ECS Fargate behind an ALB all with SSL certs all in a VPC with appropriate public/private zones and security groups.
 
 When you are done, you can access urls such as:
- https://api.examplr.co/helloworld1/whatever
- https://dev.examplr.co/helloworld1/whatever
- https://dev2.dev.examplr.co/configurable_path/whatever
-
+ https://dev.examplr.co/**
+ https://*.dev.examplr.co/**
+ 
 
 ## Status / Versions
+
+v0.0.5 - 2023-01-25
+- Add a SecretManager secret to go along with each app env
+- Externalized container definitions into json files so that you can deploy secrets into your container via SecretManager
+- Added VPN
+- Added RDS Mysql
 
 v0.0.4 - 2023-01-16
 - Updated to use terraform registry best practice vpn module
@@ -37,20 +42,15 @@ v0.0.1 - 2023-01-10
  - peer review this effort with people who know more about TF/CICD than me (Wells)
  - hook up a github action in "examplr-app-helloworld" to auto build/push/deploy new container images
  - figures out use of container stable tags vs CICD deploying a new task definition
- - setup and document github branch protection rules for both repos
- - replace the custom vpn module with the "standard" Terraform Registry VPN module 
+ - setup and document github branch protection rules for both repos 
  - add cloud watch alarms for each service
- - running an apply after changing SSL cert host names seems to change to many things...why?
+ - Several other TODOs are identified in this document below.
  
-### Known Sub Optimal Things
-
+### Known Issues
  - When modifying an ssl cert, the validation completes before the cert is ready in ACM and causes the apply to fail.  
    When you run apply immediately again, it works.  I've tried adding a sleep but results have been inconsistent
 
-
-Several other TODOs are identified in this document below.
- 
-
+   
 ## Resource Overview
 
 Usernames and passwords for all the accounts here are kept in the Rocket Partners 1Password "examplr" vault.
@@ -62,6 +62,7 @@ This "starter kit" involves the following pieces:
    - this repo: https://github.com/examplr/examplr-terraform
    - a simple "Hello World" app: https://github.com/examplr/examplr-app-helloworld
 - a Terraform Cloud account
+- Optionally a VPN services such as Perimeter81 so you can access your private subnets (dbs etc.)
  
 ### AWS Accounts
 - exampr          - master biller account
@@ -262,3 +263,10 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
    - https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
    - https://cloudlumberjack.com/posts/github-actions-approvals/
    - https://docs.github.com/en/actions/deployment/managing-your-deployments/viewing-deployment-history
+
+### Secrets
+- https://registry.terraform.io/modules/Exlabs/ecs-secrets-manager/aws/latest
+- https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html
+- https://dev.to/devalexiou/using-secrets-stored-in-aws-secrets-manager-as-environment-variables-for-ecs-container-definitions-with-terraform-4cae
+- https://mobycast.fm/secrets-handling-for-containerized-applications-running-on-ecs/
+- https://aws.amazon.com/premiumsupport/knowledge-center/secrets-manager-share-between-accounts/

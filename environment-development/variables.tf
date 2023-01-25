@@ -1,7 +1,4 @@
-variable "env_aws_region" {
-  type    = string
-  default = "us-east-1"
-}
+
 
 variable "env_aws_access_key" {
   type = string
@@ -11,48 +8,25 @@ variable "env_aws_secret_key" {
   type = string
 }
 
-variable "devops_account_id" {
-  type = string
-}
-
 variable "app_name" {
   description = "The name of the logical 'app' that this terraform corresponds to.  This value will be used to tag and prefix or postfix many of the created resources."
   type        = string
-  default     = "app"
 }
 
+variable "app_region" {
+  type    = string
+  default = "us-east-1"
+}
 
-variable "app_environment" {
+variable "app_env" {
   description = "The environment of the logical 'app' that this terraform corresponds to.  For example 'dev' or 'prod'.  This value will be used to tag and prefix or postfix many of the created resources.  Defaults to $${terraform.workspace}"
   type        = string
-  default     = ""
 }
 
-
-variable "tag_project" {
-  description = "The umbrella project this app is related to.  Tagged as 'Project'. Defaults to '$${var.app_name}'."
+variable "app_domain" {
   type        = string
-  default     = ""
+  description = "The domain name corresponding to the Route53 zone where DNS records should be placed"
 }
-
-variable "tag_cost_center" {
-  description = "The cost center responsible for the bills.  Tagged as 'CostCenter'.  Defaults to '$${var.app_name}'."
-  type        = string
-  default     = ""
-}
-
-variable "tag_owner" {
-  description = "The organizational unit responsible for this infrastructure."
-  type        = string
-  default     = "devops"
-}
-
-variable "tag_terraform_repo" {
-  description = "The git repo url where this terraform script is found.  Tagged as 'TerraformRepo"
-  type        = string
-  default     = "local"
-}
-
 
 variable "additional_tags" {
   description = "Additional global tags for all resources."
@@ -60,9 +34,46 @@ variable "additional_tags" {
   default     = {}
 }
 
+variable "vpc_cidr" {
+  type = string
+}
+
+variable "vpc_public_subnets" {
+  type = list(string)
+}
+
+variable "vpc_private_subnets" {
+  type = list(string)
+}
+
+variable "vpc_database_subnets" {
+  type = list(string)
+}
+
+variable "vpn_host" {
+  type    = string
+  default = null
+}
+
+variable "mysql_user" {
+  type    = string
+  default = "root"
+}
+
+variable "mysql_pass" {
+  type    = string
+  default = "password"
+}
+
+
+variable "vpn_destination_cidr_block" {
+  type    = string
+  default = "10.255.0.0/16"
+}
+
 
 variable "albs" {
-  description = "The ALBs to create.  Each name  Each name provided will be prefixed with '$${var.app_environment}-$${var.app_name}-' automatically. The resulting name must be unique to the AWS account."
+  description = "The ALBs to create.  Each name  Each name provided will be prefixed with '$${var.app_env}-$${var.app_name}-' automatically. The resulting name must be unique to the AWS account."
   type        = list(object({
     name        = string
     dns_aliases = list(string)
@@ -81,9 +92,12 @@ variable "albs" {
   }))
 }
 
+variable "ecr_account_id" {
+  type = string
+}
 
 variable "ecs_clusters" {
-  description = "The ECS clusters to create.  Each name provided will be prefixed with '$${var.app_environment}-$${var.app_name}-' automatically. The resulting name must be unique to the AWS account."
+  description = "The ECS clusters to create.  Each name provided will be prefixed with '$${var.app_env}-$${var.app_name}-' automatically. The resulting name must be unique to the AWS account."
   type        = list(string)
 }
 
@@ -92,6 +106,7 @@ variable "ecs_services" {
   type        = list(object({
 
     name          = string
+    profile       = optional(string)
     port          = optional(number)
     cpu           = optional(number)
     memory        = optional(number)
@@ -104,15 +119,7 @@ variable "ecs_services" {
     repository_url = optional(string)
     repository_tag = optional(string)
 
-    /*
-    alb_name  = optional(string)
-    alb_rules = list(object({
-      port     = number
-      paths    = optional(list(string))
-      hosts    = optional(list(string))
-      priority = optional(number)
-    }))
-    */
-
   }))
 }
+
+

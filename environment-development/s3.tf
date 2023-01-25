@@ -1,6 +1,6 @@
 
 resource "aws_s3_bucket" "accessible_bucket" {
-  bucket = "examplr-helloworld-${var.app_environment}"
+  bucket = "examplr-helloworld-${var.app_env}"
 }
 
 resource "aws_s3_bucket_acl" "accessible_bucket_acl" {
@@ -9,17 +9,14 @@ resource "aws_s3_bucket_acl" "accessible_bucket_acl" {
 }
 
 resource "aws_s3_object" "accessible_bucket_file" {
-  bucket ="examplr-helloworld-${var.app_environment}"
+  bucket ="examplr-helloworld-${var.app_env}"
   key    = "helloworld.txt"
-  source = "../files/helloworld.txt"
+  source = "../files/s3/helloworld.txt"
   depends_on = [aws_s3_bucket.accessible_bucket]
 }
 
-
-
-
 resource "aws_s3_bucket" "inaccessible_bucket" {
-  bucket = "examplr-helloworld-private-${var.app_environment}"
+  bucket = "examplr-helloworld-private-${var.app_env}"
 }
 
 resource "aws_s3_bucket_acl" "inaccessible_bucket_acl" {
@@ -28,9 +25,9 @@ resource "aws_s3_bucket_acl" "inaccessible_bucket_acl" {
 }
 
 resource "aws_s3_object" "inaccessible_bucket_file" {
-  bucket = "examplr-helloworld-private-${var.app_environment}"
+  bucket = "examplr-helloworld-private-${var.app_env}"
   key    = "helloworld.txt"
-  source = "../files/helloworld.txt"
+  source = "../files/s3/helloworld.txt"
   depends_on = [aws_s3_bucket.inaccessible_bucket]
 }
 

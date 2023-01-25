@@ -9,7 +9,7 @@ locals {
           )
 
   container_port = var.port != null ? var.port : 8080
-  health_check = var.health_check != null ? var.health_check : "/health"
+  health_check = var.health_check != null ? var.health_check : "/actuator/health"
 }
 
 resource "aws_lb_target_group" "target_group" {
@@ -22,6 +22,7 @@ resource "aws_lb_target_group" "target_group" {
   health_check {
     enabled = true
     path    = local.health_check
+    port    = var.port
   }
 }
 
