@@ -5,6 +5,8 @@
 *.tfstate
 *.tfstate.*
 
+**/.terraform.lock.hcl
+
 # Crash log files
 crash.log
 
@@ -32,3 +34,4 @@ override.tf.json
 /secrets.sh
 /environment-development/.terraform/
 /environment-development/.terraform.lock.hcl
+

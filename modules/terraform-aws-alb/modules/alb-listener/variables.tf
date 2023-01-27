@@ -20,9 +20,8 @@ variable "cert_names" {
 }
 
 variable "rules" {
-  type = list(object(
+  type = map(object(
     {
-      service      = string
       port         = optional(number)
       paths        = optional(list(string))
       hosts        = optional(list(string))

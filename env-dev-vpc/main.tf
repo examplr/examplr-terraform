@@ -10,18 +10,22 @@ terraform {
 }
 
 provider "aws" {
-  region     = var.devops_aws_region
-  access_key = var.devops_aws_access_key
-  secret_key = var.devops_aws_secret_key
+  region     = var.app_region
+  access_key = var.env_aws_access_key
+  secret_key = var.env_aws_secret_key
 
   default_tags {
     tags = merge(
       var.additional_tags,
       {
+        AppName   = var.app_name
+        AppEnv    = var.app_env
         Terraform = "true"
       })
   }
 
 }
+
+
 
 

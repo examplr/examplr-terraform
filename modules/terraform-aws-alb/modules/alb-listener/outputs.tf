@@ -1,8 +1,10 @@
 
 output "service_to_target_group_arn_map"{
-  value = zipmap(module.rules[*].service, module.rules[*].target_group_arn)
+  //value = zipmap(module.rules[*].service, module.rules[*].target_group_arn)
+
+  value = { for k, v in module.rules : v.service => v.target_group_arn }
 }
 
 output "listener_arn"{
-  value = concat(aws_alb_listener.http, aws_alb_listener.https)[0]
+  value = aws_alb_listener.listener.arn
 }

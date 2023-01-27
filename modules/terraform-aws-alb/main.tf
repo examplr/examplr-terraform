@@ -1,4 +1,7 @@
 
+locals{
+  alb_keys = toset(keys(var.listeners))
+}
 
 resource "aws_security_group" "egress_all" {
   name        = "${var.name}-egress-all"
@@ -19,21 +22,21 @@ resource "aws_security_group" "egress_all" {
 
 
 resource "aws_security_group" "ingress" {
-  count = length(var.listeners)
+  for_each = local.alb_keys
 
-  name        = "${var.name}-ingress-${var.listeners[count.index].port}"
-  description = "Allow inbound port ${var.listeners[count.index].port} traffic"
+  name        = "${var.name}-ingress-${each.key}"
+  description = "Allow inbound port ${each.key} traffic"
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = var.listeners[count.index].port
-    to_port     = var.listeners[count.index].port
+    from_port   = each.key
+    to_port     = each.key
     protocol    = "TCP"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
-    Name = "${var.name}-ingress_${var.listeners[count.index].port}"
+    Name = "${var.name}-ingress_${each.key}"
   }
 }
 
@@ -44,7 +47,7 @@ resource "aws_alb" "alb" {
   load_balancer_type = "application"
 
   subnets = var.subnets
-  security_groups = concat([aws_security_group.egress_all.id], aws_security_group.ingress[*].id)
+  security_groups = concat([aws_security_group.egress_all.id], [for v in aws_security_group.ingress : v.id])
 }
 
 
@@ -70,15 +73,16 @@ resource "aws_route53_record" "alias" {
 
 module "alb_listener"{
   source = "./modules/alb-listener"
-  count = length(var.listeners)
+
+  for_each = local.alb_keys
 
   vpc_id = var.vpc_id
   alb_arn = aws_alb.alb.arn
 
-  port = var.listeners[count.index].port
+  port = tonumber(each.key)
   dns_aliases = var.dns_names
-  cert_names = var.listeners[count.index].cert
-  rules = var.listeners[count.index].rules
+  cert_names = var.listeners[each.key].cert
+  rules = var.listeners[each.key].rules
 
 }
 

@@ -18,12 +18,9 @@ variable "dns_names" {
 }
 
 variable "listeners" {
-  type = list(object({
-    port  = number
+  type = map(object({
     cert  = optional(list(string))
-    rules = list(object({
-      service      = string
-      port         = number
+    rules = map(object({
       paths        = optional(list(string))
       hosts        = optional(list(string))
       priority     = optional(number)

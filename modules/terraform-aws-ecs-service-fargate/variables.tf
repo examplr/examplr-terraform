@@ -73,7 +73,7 @@ variable "vpc_id" {
   type = string
 }
 
-variable "subnets" {
+variable "subnets_ids" {
   description = ""
   type        = list(string)
 }

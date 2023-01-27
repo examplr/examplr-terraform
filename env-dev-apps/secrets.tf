@@ -1,4 +1,10 @@
 
+locals{
+  secrets_file = fileexists("./secrets.json") ? jsondecode(file("./secrets.json")) : {}
+  secrets = merge(local.secrets_file, var.secrets)
+}
+
+
 
 resource "aws_secretsmanager_secret" "secret" {
   name = "${var.app_env}-${var.app_name}"
@@ -12,9 +18,6 @@ resource "aws_secretsmanager_secret" "secret" {
 
 resource "aws_secretsmanager_secret_version" "values" {
   secret_id     = aws_secretsmanager_secret.secret.id
-  secret_string = jsonencode(
-    {
-      "mysql.user" = var.mysql_user
-      "mysql.pass" = var.mysql_pass
-    })
+  secret_string = jsonencode(local.secrets)
+
 }

@@ -115,7 +115,7 @@ resource "aws_ecs_service" "service" {
   network_configuration {
     assign_public_ip = false
     security_groups  = [aws_security_group.egress.id, aws_security_group.ingress.id]
-    subnets          = var.subnets
+    subnets          = var.subnets_ids
   }
 }
 
@@ -196,12 +196,54 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
 }
 
 
-module "secrets" {
-  source = "./modules/secret"
 
-  secret_arn              = var.secret_arn
-  ecs_task_execution_role = "${var.name}-execution-role"
-  depends_on              = [aws_iam_role.execution_role]
+data aws_iam_policy_document secrets_policy {
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = [aws_iam_role.execution_role.arn]
+      type = "AWS"
+    }
+    actions = [
+      "secretsmanager:GetSecret",
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = ["*"]
+  }
 }
 
 
+resource "aws_secretsmanager_secret_policy" "example" {
+  secret_arn = var.secret_arn
+  policy = data.aws_iam_policy_document.secrets_policy.json
+}
+
+
+resource aws_iam_policy secrets_access {
+  name        =  "${var.name}-secret-policy"
+  description = "Access rights to SecretsManager Secret"
+  policy = <<-POLICY
+  {
+     "Version": "2012-10-17",
+     "Statement": [
+         {
+             "Effect": "Allow",
+             "Action": [
+                 "secretsmanager:GetResourcePolicy",
+                 "secretsmanager:GetSecretValue",
+                 "secretsmanager:DescribeSecret",
+                 "secretsmanager:ListSecretVersionIds"
+             ],
+             "Resource": [
+               "${var.secret_arn}"
+             ]
+         }
+     ]
+  }
+  POLICY
+}
+
+resource aws_iam_role_policy_attachment secret_access {
+  role       = aws_iam_role.execution_role.name
+  policy_arn = aws_iam_policy.secrets_access.arn
+}

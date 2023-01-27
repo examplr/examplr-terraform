@@ -8,7 +8,7 @@
             "s3:ListBucket",
             "s3:GetBucketLocation"
           ],
-          "Resource": "arn:aws:s3:::examplr-helloworld-${app_env}"
+          "Resource": "arn:aws:s3:::${app_env}-${app_name}-bucket1"
         },
         {
           "Sid": "S3Use",
@@ -20,7 +20,7 @@
             "s3:GetObjectAcl",
             "s3:DeleteObject"
           ],
-          "Resource": "arn:aws:s3:::examplr-helloworld-${app_env}/*"
+          "Resource": "arn:aws:s3:::${app_env}-${app_name}-bucket1/*"
         }
     ]
 }

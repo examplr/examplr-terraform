@@ -2,9 +2,9 @@
 module "ecr-cross-account" {
   source                      = "../modules/terraform-aws-ecr-cross-account"
 
-  count = length(var.ecr_repositories)
+  for_each = toset(keys(var.ecr_repositories))
 
-  repository_name             = var.ecr_repositories[count.index].name
-  allowed_read_principals     = var.ecr_repositories[count.index].allowed_read_principals
-  allowed_write_principals    = var.ecr_repositories[count.index].allowed_write_principals
+  repository_name             = each.key
+  allowed_read_principals     = var.ecr_repositories[each.key].allowed_read_principals
+  allowed_write_principals    = var.ecr_repositories[each.key].allowed_write_principals
 }

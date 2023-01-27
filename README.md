@@ -11,6 +11,25 @@ When you are done, you can access urls such as:
  https://dev.examplr.co/**
  https://*.dev.examplr.co/**
  
+## Lessons Learned
+
+### General
+
+- While "click a button and get a new environment" sounds nice, it is actually a terrible goal.  More stable parts of
+an infrastructure should be isolated into their own TF.  At this point, I think "each large feature" should be its own TF workspace.
+
+- Count vs For-each - using 'count' as your looping construct makes your TF brittle and sensitive to things like reordering things in a tfvars list.  Stay away from count, favor for-each.
+
+### TFCloud w/ GitHub integration
+
+ - Don't use GitHub integration for lower environments.  Using TFCloud integration for state hosting is OK, but Github integration makes
+it super hard when developing new infrastructure.
+
+ - Their GitHub integration, while functional, has a horrible UX.  You can not review the 'plan' from within Github.  It is clearly
+super important to review the plan.  Just because the plan completes without error in no way means you want to apply that plan.
+What you really want is PR approval of the TF change AND PR approval of the plan.  I don't see how to do that yet.
+
+   
 
 ## Status / Versions
 
@@ -100,9 +119,10 @@ Each of the above directories is related to a Terraform Cloud workspace of the s
 
 #### Hello World Repo: 
 
-https://github.com/examplr/examplr-app-helloworld
+https://github.com/examplr/examplr-helloworld-api-v1
 
-A simple springboot app accessible as "dev.examplr.co/helloworld1" or "api.examplr.co/helloworld1". See terraform.tfvars in environment-* for specifics on the url routing rules.
+
+A simple springboot app accessible as "dev.examplr.co" or "api.examplr.co/helloworld1". See terraform.tfvars in environment-* for specifics on the url routing rules.
 
 
 ### Terraform Cloud
@@ -270,3 +290,10 @@ aws ecs update-service --cluster dev-lift-test1 --service dev-helloworld --force
 - https://dev.to/devalexiou/using-secrets-stored-in-aws-secrets-manager-as-environment-variables-for-ecs-container-definitions-with-terraform-4cae
 - https://mobycast.fm/secrets-handling-for-containerized-applications-running-on-ecs/
 - https://aws.amazon.com/premiumsupport/knowledge-center/secrets-manager-share-between-accounts/
+
+### RDS
+- https://stackoverflow.com/questions/8919907/can-i-create-trigger-in-an-rds-db
+
+
+### TF Cloud & GitHub
+https://developer.hashicorp.com/terraform/tutorials/automation/github-actions

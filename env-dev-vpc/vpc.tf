@@ -6,13 +6,13 @@ module "vpc" {
   name = "${var.app_env}-${var.app_name}-vpc"
   cidr = var.vpc_cidr
 
-  azs              = ["${var.app_region}a", "${var.app_region}b", "${var.app_region}c"]
-  private_subnets  = var.vpc_private_subnets
+  azs              = var.vpc_azs
   public_subnets   = var.vpc_public_subnets
+  private_subnets  = var.vpc_private_subnets
   database_subnets = var.vpc_database_subnets
 
-  create_database_subnet_group = true
-  database_subnet_group_name = "${var.app_env}-${var.app_name}-db-${var.app_region}-sg"
+  create_database_subnet_group = false
+  //database_subnet_group_name = "${var.app_env}-${var.app_name}-db-${var.app_region}-sg"
 
   manage_default_network_acl = true
   default_network_acl_tags   = { Name = "${var.app_env}-${var.app_name}-default" }
