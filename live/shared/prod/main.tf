@@ -1,4 +1,4 @@
-module "dev_shared_infra" {
+module "shared_infra" {
   source = "../../../modules/terraform-aws-shared-infra"
 
   alb_cert_domain_name = "api.examplr.co."
